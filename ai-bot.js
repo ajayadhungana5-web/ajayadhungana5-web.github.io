@@ -4,14 +4,11 @@
  * Simulates Ajaya Dhungana's persona.
  */
 
-const API_KEY = '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';
-const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+// const API_KEY = 'REVOKED'; 
+const PROXY_URL = '/api/chat'; // Using Vercel Function proxy
 const MODEL = 'arcee-ai/trinity-large-preview:free';
 const FALLBACK_MODELS = [
-    'stepfun/step-3.5-flash:free',
-    'liquid/lfm-2.5-1.2b-instruct:free',
-    'arcee-ai/trinity-mini:free',
-    'nvidia/nemotron-nano-9b-v2:free'
+    'stepfun/step-3.5-flash:free'
 ];
 
 const SYSTEM_PROMPT = `
@@ -204,19 +201,14 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Chatting using model:", activeModel);
 
         try {
-            const response = await fetch(API_URL, {
+            const response = await fetch(PROXY_URL, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${API_KEY}`,
-                    'HTTP-Referer': window.location.href, // Required by OpenRouter
-                    'X-Title': 'Ajaya Portfolio AI', // Optional
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     model: activeModel,
-                    messages: history,
-                    temperature: 0.7, // Creative but focused
-                    max_tokens: 150   // Keep answers concise
+                    messages: history
                 })
             });
 

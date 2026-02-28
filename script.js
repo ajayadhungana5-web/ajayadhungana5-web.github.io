@@ -383,50 +383,6 @@ tl.to('#loader-word .char', {
 
 // --- Scroll Animations ---
 
-// About Me Section Animations
-const aboutSection = document.getElementById('about');
-if (aboutSection) {
-    // Photos stack animation
-    gsap.from('.about-photo', {
-        scrollTrigger: {
-            trigger: aboutSection,
-            start: 'top 75%',
-        },
-        y: 100,
-        x: (index) => index * -30,
-        rotate: (index) => (index === 0 ? -5 : 5),
-        opacity: 0,
-        duration: 1.2,
-        stagger: 0.2,
-        ease: "back.out(1.2)"
-    });
-
-    // Parallax sub-elements for photo stack
-    gsap.to('.about-photo:nth-child(2)', {
-        scrollTrigger: {
-            trigger: aboutSection,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1
-        },
-        y: -40,
-        rotate: 8
-    });
-
-    // Text reveal stagger
-    gsap.from('.about-reveal', {
-        scrollTrigger: {
-            trigger: aboutSection,
-            start: 'top 80%',
-        },
-        y: 40,
-        opacity: 0,
-        duration: 1,
-        stagger: 0.15,
-        ease: "power3.out"
-    });
-}
-
 // Expertise Cards Stagger
 gsap.from('.expertise-card', {
     scrollTrigger: {
@@ -438,6 +394,21 @@ gsap.from('.expertise-card', {
     stagger: 0.15,
     duration: 0.8,
     ease: "power3.out"
+});
+
+// About Cards Stagger
+gsap.from('.about-card', {
+    scrollTrigger: {
+        trigger: '#about',
+        start: 'top 85%',
+        once: true,
+    },
+    y: 30,
+    opacity: 0,
+    stagger: 0.08,
+    duration: 0.7,
+    ease: "power3.out",
+    immediateRender: false,
 });
 
 // Section Titles Reveal
@@ -509,7 +480,7 @@ gsap.utils.toArray('.expertise-card .bg-brand-green').forEach((bar) => {
 // Progress bar animations were kept, card entrance animations removed since they are handled by staggered animation earlier.
 
 // Mouse tracking and 3D Tilt for cards
-document.querySelectorAll('.expertise-card, .project-card').forEach(card => {
+document.querySelectorAll('.expertise-card, .project-card, .about-card').forEach(card => {
     card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -783,49 +754,79 @@ if (contactForm) {
     });
 }
 
-// --- Vertical Stacking Work Section Animations ---
+// --- Horizontal Scroll for Work Section ---
 if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
     gsap.registerPlugin(ScrollTrigger);
 
-    const workCards = gsap.utils.toArray('.work-stack-card');
+    const workStrip = document.getElementById('work-strip');
+    const workSection = document.getElementById('work');
+    const workCards = gsap.utils.toArray('.work-card');
+    const progressLabel = document.getElementById('work-progress-label');
+    const workDots = document.querySelectorAll('.work-dot');
 
-    if (workCards.length > 0) {
-        // Apply slight scale down to the cards as they get stacked over
-        workCards.forEach((card, index) => {
-            if (index < workCards.length - 1) {
-                gsap.to(card, {
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top top',
-                        endTrigger: workCards[index + 1],
-                        end: 'top top',
-                        scrub: 1,
-                        pinSpacing: false
-                    },
-                    scale: 0.95,
-                    opacity: 0.5,
-                    filter: "blur(4px)",
-                    transformOrigin: "top center",
-                    ease: "none"
-                });
-            }
-        });
+    if (workStrip && workSection && workCards.length > 0) {
 
-        // Add extreme parallax to the layered authentic photos inside the cards
-        gsap.utils.toArray('.parallax-img').forEach(img => {
-            gsap.fromTo(img,
-                { y: 100 },
-                {
-                    y: -50,
-                    ease: "none",
-                    scrollTrigger: {
-                        trigger: img.closest('.work-stack-card'),
-                        start: 'top bottom',
-                        end: 'bottom top',
-                        scrub: 1
+        const tween = gsap.to(workStrip, {
+            x: () => -(workStrip.scrollWidth - window.innerWidth),
+            ease: "none",
+            scrollTrigger: {
+                trigger: workSection,
+                start: "top top",
+                end: () => `+=${workStrip.scrollWidth - window.innerWidth}`,
+                pin: true,
+                scrub: 1,
+                invalidateOnRefresh: true,
+                onUpdate: (self) => {
+                    const progress = self.progress;
+                    const totalCards = workCards.length;
+                    let activeIndex = Math.min(
+                        totalCards - 1,
+                        Math.floor(progress * totalCards)
+                    );
+                    if (progress > 0.95) activeIndex = totalCards - 1;
+
+                    if (progressLabel) {
+                        progressLabel.textContent = `0${activeIndex + 1} / 0${totalCards}`;
+                    }
+
+                    if (workDots) {
+                        workDots.forEach((dot, index) => {
+                            if (index === activeIndex) {
+                                dot.style.width = '24px';
+                                dot.style.backgroundColor = '#00ff66';
+                            } else {
+                                dot.style.width = '8px';
+                                dot.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                            }
+                        });
                     }
                 }
-            );
+            }
         });
     }
 }
+
+// --- Magnetic Buttons ---
+document.querySelectorAll('.magnetic-btn').forEach(btn => {
+    btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+
+        gsap.to(btn, {
+            x: x * 0.3,
+            y: y * 0.3,
+            duration: 0.4,
+            ease: "power2.out"
+        });
+    });
+
+    btn.addEventListener('mouseleave', () => {
+        gsap.to(btn, {
+            x: 0,
+            y: 0,
+            duration: 0.7,
+            ease: "elastic.out(1, 0.3)"
+        });
+    });
+});

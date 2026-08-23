@@ -866,3 +866,421 @@ body {
 .work-stack-card .work-stack-img {
     will-change: transform;
 }
+
+/* Bento card styling */
+.about-card {
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.7) 0%, rgba(5, 5, 5, 0.85) 100%) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.about-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(800px circle at var(--card-mouse-x, 0) var(--card-mouse-y, 0), rgba(0, 255, 102, 0.06), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.about-card:hover::before {
+    opacity: 1;
+}
+
+/* Chat bubble enhancements */
+#open-chat-btn {
+    animation: floatChatBtn 3s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
+    border: 1px solid rgba(0, 255, 102, 0.4);
+    transition: all 0.3s ease;
+}
+
+#open-chat-btn:hover {
+    box-shadow: 0 0 35px rgba(0, 255, 102, 0.6);
+    transform: scale(1.05) translateY(-5px);
+}
+
+/* Pulse animation for the green online dot */
+.online-pulse {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background-color: #00ff66;
+    border-radius: 50%;
+    border: 2px solid #030303;
+    box-shadow: 0 0 8px #00ff66;
+}
+
+.online-pulse::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 1px solid #00ff66;
+    animation: pulseDot 1.5s ease-out infinite;
+}
+
+@keyframes floatChatBtn {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes pulseDot {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2.2);
+        opacity: 0;
+    }
+}
+
+/* Scroll progress indicator */
+#scroll-progress {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 99;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+}
+
+#scroll-progress:hover {
+    transform: scale(1.1);
+    border-color: rgba(0, 255, 102, 0.4);
+    box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
+}
+
+#scroll-progress svg {
+    transform: rotate(-90deg);
+}
+
+#scroll-progress circle {
+    fill: none;
+    stroke-width: 3;
+}
+
+#scroll-progress .bg-circle {
+    stroke: rgba(255, 255, 255, 0.05);
+}
+
+#scroll-progress .progress-circle {
+    stroke: #00ff66;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.1s linear;
+}
+
+/* =============================================
+   WOW FACTOR ENHANCEMENTS
+   ============================================= */
+
+/* Simple typographic treatment for the hero */
+.hero-text-line {
+    position: relative;
+    color: #f5f5f5;
+    -webkit-text-fill-color: currentColor;
+    transition: color 0.3s ease, -webkit-text-stroke-color 0.3s ease;
+}
+
+.hero-solid-white {
+    color: #f5f5f5;
+}
+
+.hero-solid-green {
+    color: #00ff66;
+}
+
+.hero-outline {
+    color: transparent;
+    -webkit-text-stroke: 1px #333;
+    text-shadow: none;
+}
+
+.hero-text-line::before,
+.hero-text-line::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    -webkit-text-fill-color: initial;
+    background: none;
+}
+
+.hero-text-line::before {
+    color: #ff315c;
+    clip-path: inset(8% 0 58% 0);
+}
+
+.hero-text-line::after {
+    color: #35e7ff;
+    clip-path: inset(62% 0 8% 0);
+}
+
+/* Keep generated character spans aligned with their parent line style. */
+.hero-text-line .char {
+    color: inherit;
+    -webkit-text-fill-color: currentColor;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Glitch Effect on Hero Title Hover */
+.hero-text-line:hover {
+    color: #00ff66;
+}
+
+.hero-outline:hover {
+    color: #00ff66;
+    -webkit-text-stroke-color: #00ff66;
+}
+
+.hero-text-line:hover::before,
+.hero-text-line:hover::after {
+    opacity: 0.8;
+    animation: glitchLayer 0.32s steps(2, end) infinite;
+}
+
+@keyframes glitchLayer {
+    0% { transform: translate(0); }
+    25% { transform: translate(-5px, 1px); }
+    50% { transform: translate(4px, -1px); }
+    75% { transform: translate(-2px, 2px); }
+    100% { transform: translate(0); }
+}
+
+@keyframes glitchText {
+    0% { transform: translate(0); }
+    10% { transform: translate(-2px, 2px); }
+    20% { transform: translate(2px, -2px); }
+    30% { transform: translate(-1px, -1px); }
+    40% { transform: translate(1px, 2px); }
+    50% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 1px); }
+    70% { transform: translate(-1px, 2px); }
+    80% { transform: translate(1px, -1px); }
+    90% { transform: translate(-2px, 2px); }
+    100% { transform: translate(0); }
+}
+
+/* 3D Tilt Effect on Bento Cards */
+.about-card {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    will-change: transform;
+}
+
+.about-card:hover {
+    border-color: rgba(0, 255, 102, 0.3) !important;
+    box-shadow:
+        0 0 40px rgba(0, 255, 102, 0.08),
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Animated neon border glow on About cards */
+.about-card::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, transparent 40%, rgba(0, 255, 102, 0.4), transparent 60%);
+    background-size: 400% 400%;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    animation: borderGlow 4s ease infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.about-card:hover::after {
+    opacity: 1;
+}
+
+@keyframes borderGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Expertise card 3D tilt */
+.expertise-card {
+    transform-style: preserve-3d;
+    perspective: 800px;
+}
+
+.expertise-card:hover {
+    box-shadow:
+        0 0 50px rgba(0, 255, 102, 0.1),
+        0 25px 80px rgba(0, 0, 0, 0.4);
+}
+
+/* Work card cinematic hover */
+.work-card > div {
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease;
+}
+
+.work-card:hover > div {
+    box-shadow:
+        0 0 60px rgba(0, 255, 102, 0.15),
+        0 30px 100px rgba(0, 0, 0, 0.6);
+}
+
+/* Canvas particle glow */
+#bg-particles {
+    filter: blur(0.5px);
+}
+
+/* Smooth section reveals */
+.section-title,
+.section-fade {
+    opacity: 1;
+    transform: none;
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section-title.is-visible,
+.section-fade.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Neon text-shadow for brand-green elements on hover */
+.text-brand-green {
+    transition: text-shadow 0.3s ease;
+}
+
+.text-brand-green:hover {
+    text-shadow:
+        0 0 10px rgba(0, 255, 102, 0.5),
+        0 0 30px rgba(0, 255, 102, 0.3),
+        0 0 60px rgba(0, 255, 102, 0.1);
+}
+
+/* Dramatic section divider */
+section {
+    position: relative;
+}
+
+section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 102, 0.2), transparent);
+}
+
+/* Enhanced marquee section glow */
+section.rotate-\[-2deg\] {
+    box-shadow: 0 0 80px rgba(0, 255, 102, 0.15);
+}
+
+/* Nav glassmorphism effect */
+nav {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Interest/hobby chip glow on hover */
+.about-card .rounded-xl:hover {
+    box-shadow: 0 0 25px rgba(0, 255, 102, 0.15);
+    transform: translateY(-4px) scale(1.02);
+}
+
+/* Staggered entrance for bento grid children */
+.about-card:nth-child(1) { transition-delay: 0s; }
+.about-card:nth-child(2) { transition-delay: 0.1s; }
+.about-card:nth-child(3) { transition-delay: 0.2s; }
+.about-card:nth-child(4) { transition-delay: 0.3s; }
+
+/* Contact form inputs glow on focus */
+#contact-form input:focus,
+#contact-form textarea:focus {
+    box-shadow: 0 2px 20px rgba(0, 255, 102, 0.1);
+    border-color: #00ff66 !important;
+}
+
+/* Footer social icons glow */
+footer a:hover i {
+    filter: drop-shadow(0 0 8px rgba(0, 255, 102, 0.6));
+}
+
+/* Chat modal enhanced backdrop */
+#ai-chat-modal > div:first-child {
+    background: radial-gradient(circle at 50% 30%, rgba(0, 255, 102, 0.03), rgba(0, 0, 0, 0.85));
+}
+
+/* Typing dots animation enhancement */
+.typing-dot {
+    width: 6px;
+    height: 6px;
+    background: #00ff66;
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+    0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Smooth page load fade */
+body {
+    animation: pageLoad 0.6s ease-out;
+}
+
+@keyframes pageLoad {
+    from {
+        opacity: 0;
+        filter: blur(4px);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+    }
+}

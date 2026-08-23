@@ -1,5 +1,8 @@
-// Initialize GSAP ScrollTrigger
-gsap.registerPlugin(ScrollTrigger);
+// Keep the content readable if an animation CDN is unavailable.
+const hasGsap = typeof gsap !== 'undefined';
+if (hasGsap && typeof ScrollTrigger !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+}
 
 // --- Custom Cursor Logic ---
 const cursorDot = document.querySelector('.cursor-dot');
@@ -46,6 +49,7 @@ hoverables.forEach(el => {
 const magnets = document.querySelectorAll('.magnetic-btn');
 magnets.forEach(magnet => {
     magnet.addEventListener('mousemove', (e) => {
+    if (!hasGsap) return;
         const rect = magnet.getBoundingClientRect();
         // Calculate distance from center
         const x = e.clientX - rect.left - rect.width / 2;
@@ -70,6 +74,7 @@ magnets.forEach(magnet => {
     });
 
     magnet.addEventListener('mouseleave', () => {
+        if (!hasGsap) return;
         // Elastic snap back
         gsap.to(magnet, {
             x: 0,
@@ -329,6 +334,7 @@ function splitTextIntoSpans(selector) {
     const elements = document.querySelectorAll(selector);
     elements.forEach(el => {
         const text = el.innerText;
+        el.dataset.text = text;
         el.innerHTML = '';
         text.split('').forEach(char => {
             const span = document.createElement('span');
@@ -343,10 +349,11 @@ function splitTextIntoSpans(selector) {
 splitTextIntoSpans('#loader-word');
 splitTextIntoSpans('.hero-text-line'); // Split hero text too
 
-const tl = gsap.timeline();
+const tl = hasGsap ? gsap.timeline() : null;
 
-// Loader chars reveal
-tl.to('#loader-word .char', {
+if (tl) {
+    // Loader chars reveal
+    tl.to('#loader-word .char', {
     y: 0,
     stagger: 0.05,
     duration: 0.8,
@@ -373,13 +380,16 @@ tl.to('#loader-word .char', {
         ease: "power4.out"
     }, "-=0.6")
     // Hero sub-elements reveal
-    .from('.hero-reveal', {
+        .from('.hero-reveal', {
         y: 30,
         opacity: 0,
         stagger: 0.1,
         duration: 1,
         ease: "power3.out"
-    }, "-=1.0");
+        }, "-=1.0");
+} else {
+    document.getElementById('loader')?.remove();
+}
 
 // --- Scroll Animations ---
 
@@ -393,7 +403,8 @@ gsap.from('.expertise-card', {
     opacity: 0,
     stagger: 0.15,
     duration: 0.8,
-    ease: "power3.out"
+    ease: "power3.out",
+    immediateRender: false
 });
 
 // About Cards Stagger
@@ -421,7 +432,8 @@ gsap.utils.toArray('.section-title').forEach(title => {
         y: 50,
         opacity: 0,
         duration: 1,
-        ease: "power4.out"
+        ease: "power4.out",
+        immediateRender: false
     });
 });
 
@@ -436,7 +448,8 @@ gsap.utils.toArray('.section-fade').forEach(fade => {
         opacity: 0,
         duration: 1,
         delay: 0.2,
-        ease: "power3.out"
+        ease: "power3.out",
+        immediateRender: false
     });
 });
 
@@ -830,3 +843,213 @@ document.querySelectorAll('.magnetic-btn').forEach(btn => {
         });
     });
 });
+
+// --- Interactive Particle Background with Constellation Lines ---
+const canvas = document.getElementById('bg-particles');
+if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 140;
+    const connectionDistance = 120;
+    
+    let mouse = { x: null, y: null, radius: 180 };
+
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    window.addEventListener('mouseleave', () => {
+        mouse.x = null;
+        mouse.y = null;
+    });
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        initParticles();
+    }
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.3;
+            this.speedX = (Math.random() - 0.5) * 0.4;
+            this.speedY = (Math.random() - 0.5) * 0.4;
+            this.opacity = Math.random() * 0.6 + 0.1;
+            this.pulseSpeed = Math.random() * 0.02 + 0.005;
+            this.pulsePhase = Math.random() * Math.PI * 2;
+        }
+
+        draw() {
+            // Pulsing opacity
+            const pulse = Math.sin(Date.now() * this.pulseSpeed + this.pulsePhase) * 0.2 + 0.8;
+            const finalOpacity = this.opacity * pulse;
+            
+            // Glow effect
+            ctx.shadowBlur = this.size * 4;
+            ctx.shadowColor = `rgba(0, 255, 102, ${finalOpacity * 0.5})`;
+            ctx.fillStyle = `rgba(0, 255, 102, ${finalOpacity})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            if (this.x < 0) this.x = canvas.width;
+            if (this.x > canvas.width) this.x = 0;
+            if (this.y < 0) this.y = canvas.height;
+            if (this.y > canvas.height) this.y = 0;
+
+            // Mouse repulsion
+            if (mouse.x !== null && mouse.y !== null) {
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    const force = (mouse.radius - distance) / mouse.radius;
+                    const directionX = dx / distance;
+                    const directionY = dy / distance;
+                    this.x -= directionX * force * 4;
+                    this.y -= directionY * force * 4;
+                }
+            }
+        }
+    }
+
+    function drawConnections() {
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < connectionDistance) {
+                    const opacity = (1 - distance / connectionDistance) * 0.15;
+                    ctx.strokeStyle = `rgba(0, 255, 102, ${opacity})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.stroke();
+                }
+            }
+
+            // Draw connections to mouse
+            if (mouse.x !== null && mouse.y !== null) {
+                const dx = mouse.x - particles[i].x;
+                const dy = mouse.y - particles[i].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    const opacity = (1 - distance / mouse.radius) * 0.25;
+                    ctx.strokeStyle = `rgba(0, 255, 102, ${opacity})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function initParticles() {
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawConnections();
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+        }
+        requestAnimationFrame(animateParticles);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    animateParticles();
+}
+
+// --- Scroll Progress Indicator ---
+const scrollProgress = document.getElementById('scroll-progress');
+const progressCircle = document.querySelector('#scroll-progress .progress-circle');
+const scrollPercentage = document.getElementById('scroll-percentage');
+
+if (progressCircle && scrollPercentage) {
+    const radius = progressCircle.r.baseVal.value;
+    const circumference = radius * 2 * Math.PI;
+
+    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+    progressCircle.style.strokeDashoffset = circumference;
+
+    function setProgress(percent) {
+        const offset = circumference - (percent / 100) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
+        scrollPercentage.textContent = `${Math.round(percent)}%`;
+    }
+
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const percent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        setProgress(percent);
+    });
+
+    scrollProgress.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+// --- 3D Tilt Effect on Bento Cards ---
+document.querySelectorAll('.about-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -6;
+        const rotateY = ((x - centerX) / centerX) * 6;
+
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        card.style.setProperty('--card-mouse-x', `${x}px`);
+        card.style.setProperty('--card-mouse-y', `${y}px`);
+    });
+
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+    });
+});
+
+// --- 3D Tilt on Expertise Cards ---
+document.querySelectorAll('.expertise-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -5;
+        const rotateY = ((x - centerX) / centerX) * 5;
+
+        card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+        card.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
+        card.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
+    });
+
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) translateZ(0)';
+    });
+});
+
